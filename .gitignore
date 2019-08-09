@@ -1,0 +1,6 @@
+.vscode
+data/tiny_imagenet_train
+data/tiny_imagenet_val
+models
+__pycache__
+
