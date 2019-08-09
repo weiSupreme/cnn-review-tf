@@ -3,4 +3,4 @@ data/tiny_imagenet_train
 data/tiny_imagenet_val
 models
 __pycache__
-
+MNIST_data
