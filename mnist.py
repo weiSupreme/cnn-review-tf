@@ -27,7 +27,7 @@ NUM_STEPS = NUM_EPOCHS * (TRAIN_DATASET_SIZE // BATCH_SIZE)
 PARAMS = {
     'train_dataset_path': 'data/tiny_imagenet_train/',
     'val_dataset_path': 'data/tiny_imagenet_val/',
-    'weight_decay': 4e-5,
+    'weight_decay': 0.01, # 4e-5,
     'initial_learning_rate': 0.0625,  #0.0625,  # 0.5/8
     'decay_steps': NUM_STEPS,
     'end_learning_rate': 1e-7,
@@ -39,14 +39,14 @@ PARAMS = {
 mnist = input_data.read_data_sets('MNIST_data/', one_hot=False)
 train_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={'images': mnist.train.images},
-    y=mnist.train.labels.astype(np.int32),
+    y={'labels':mnist.train.labels.astype(np.int32)},
     num_epochs=None,
     shuffle=True,
     batch_size=BATCH_SIZE)
 
 val_input_fn = tf.estimator.inputs.numpy_input_fn(
     x={'images': mnist.test.images},
-    y=mnist.test.labels.astype(np.int32),
+    y={'labels':mnist.test.labels.astype(np.int32)},
     batch_size=VALIDATION_BATCH_SIZE,
     shuffle=False)
 
@@ -68,7 +68,7 @@ train_spec = tf.estimator.TrainSpec(train_input_fn, max_steps=NUM_STEPS)
 eval_spec = tf.estimator.EvalSpec(
     val_input_fn,
     steps=None,
-    throttle_secs=20,
+    throttle_secs=10,
     hooks=[RestoreMovingAverageHook(PARAMS['model_dir'])])
 
 tf.estimator.train_and_evaluate(estiamtor, train_spec, eval_spec)

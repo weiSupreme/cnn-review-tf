@@ -37,14 +37,20 @@ def model_fn(features, labels, mode, params):
         }
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
+    with tf.name_scope('weight_decay'):
+        add_weight_decay(params['weight_decay'])
+        regularization_loss=tf.losses.get_regularization_loss()
+
     with tf.variable_scope('cross_entropy'):
         #compute loss
-        loss = tf.losses.sparse_softmax_cross_entropy(labels=labels,
+        loss = tf.losses.sparse_softmax_cross_entropy(labels=labels['labels'],
                                                       logits=logits)
         #loss = tf.reduce_mean(loss, axis=0)
+        tf.losses.add_loss(loss)
+    total_loss=tf.losses.get_total_loss(add_regularization_losses=True)
 
     #compute accuracy
-    acc = tf.metrics.accuracy(labels=labels,
+    acc = tf.metrics.accuracy(labels=labels['labels'],
                               predictions=predicted_class,
                               name='accuracy')
     metrics = {'accuracy': acc}
@@ -52,7 +58,7 @@ def model_fn(features, labels, mode, params):
 
     if mode == tf.estimator.ModeKeys.EVAL:
         return tf.estimator.EstimatorSpec(mode,
-                                          loss=loss,
+                                          loss=total_loss,
                                           eval_metric_ops=metrics)
 
     assert mode == tf.estimator.ModeKeys.TRAIN
@@ -69,7 +75,7 @@ def model_fn(features, labels, mode, params):
         optimizer = tf.train.MomentumOptimizer(learning_rate,
                                                momentum=MOMENTUM,
                                                name='Momentum')
-        grads_and_vars = optimizer.compute_gradients(loss)
+        grads_and_vars = optimizer.compute_gradients(total_loss)
         train_op = optimizer.apply_gradients(grads_and_vars, global_step)
 
     with tf.control_dependencies([train_op]), tf.name_scope('ema'):
@@ -78,6 +84,15 @@ def model_fn(features, labels, mode, params):
         train_op = ema.apply(tf.trainable_variables())
 
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
+
+def add_weight_decay(weight_decay):
+    weights = [
+        v for v in tf.trainable_variables()
+        if 'weights' in v.name and 'depthwise_weights' not in v.name
+    ]
+    for w in weights:
+        value = tf.multiply(weight_decay, tf.nn.l2_loss(w))
+        tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, value)
 
 
 class RestoreMovingAverageHook(tf.train.SessionRunHook):

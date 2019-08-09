@@ -25,7 +25,7 @@ NUM_STEPS = NUM_EPOCHS * (TRAIN_DATASET_SIZE // BATCH_SIZE)
 PARAMS = {
     'train_dataset_path': 'data/tiny_imagenet_train/',
     'val_dataset_path': 'data/tiny_imagenet_val/',
-    'weight_decay': 4e-5,
+    'weight_decay': 0.001, # 4e-5,
     'initial_learning_rate': 0.0625,  #0.0625,  # 0.5/8
     'decay_steps': NUM_STEPS,
     'end_learning_rate': 1e-7,
