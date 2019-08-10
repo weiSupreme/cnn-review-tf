@@ -1,5 +1,5 @@
 import tensorflow as tf
-from architectures.ResNet import ResNet as cnn
+from architectures.ShufflenetV2 import ShuffleNetV2 as cnn
 
 MOMENTUM = 0.9
 USE_NESTEROV = True
@@ -72,7 +72,8 @@ def model_fn(features, labels, mode, params):
             name='learning_rate')
     tf.summary.scalar('learning_rate',learning_rate)
 
-    with tf.variable_scope('optimizer'):
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops), tf.variable_scope('optimizer'):
         optimizer = tf.train.MomentumOptimizer(learning_rate,
                                                momentum=MOMENTUM,
                                                name='Momentum')

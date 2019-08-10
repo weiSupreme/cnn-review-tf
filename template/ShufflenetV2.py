@@ -75,9 +75,9 @@ def shufflenet_v2(images, is_training, num_classes=1000, depth_multiplier='1.0')
             images=tf.image.resize_images(images,[224,224],method=0)
             images=(1.0 / 255.0) * tf.to_float(images)
             images=tf.reshape(images, (1,224,224,1))
-    with tf.name_scope('standardize_input'):
-        x = (2.0 * images) - 1.0
-
+    #with tf.name_scope('standardize_input'):
+     #   x = (2.0 * images) - 1.0
+    x=images
     with tf.variable_scope('ShuffleNetV2'):
         params = {
             'padding': 'SAME', 'activation_fn': tf.nn.relu,
@@ -93,8 +93,8 @@ def shufflenet_v2(images, is_training, num_classes=1000, depth_multiplier='1.0')
                     end_point = end_point_base
                     if i >3:
                         x = tf.concat([x, y], axis=3)
-                        with tf.variable_scope('RFB1'):
-                          x = RFBModuleB2(x, initial_depth*4)   #  RFB********************************
+                        #with tf.variable_scope('RFB1'):
+                         # x = RFBModuleB2(x, initial_depth*4)   #  RFB********************************
                         x = slim.conv2d(x, depth(conv_def.depth), conv_def.kernel,
                                         stride=conv_def.stride,
                                         scope=end_point)
@@ -111,10 +111,10 @@ def shufflenet_v2(images, is_training, num_classes=1000, depth_multiplier='1.0')
                     if conv_def.stride == 2:
                         if i > 3:
                             x = tf.concat([x, y], axis=3)
-                            if i==13:
-                              with tf.variable_scope('RFB2'):
-                                x = RFBModuleB2(x,initial_depth*2)   #  RFB********************************
-                              x = slim.conv2d(x, 256, (1,1),1,scope='conv13pre')
+                            #if i==13:
+                              #with tf.variable_scope('RFB2'):
+                               # x = RFBModuleB2(x,initial_depth*2)   #  RFB********************************
+                             # x = slim.conv2d(x, 256, (1,1),1,scope='conv13pre')
                             end_points[end_point_base] = x
                         end_point = end_point_base + '_downsampling'
                         with tf.variable_scope('unit_%d' % i):
