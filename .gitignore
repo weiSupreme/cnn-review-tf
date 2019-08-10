@@ -7,3 +7,4 @@ MNIST_data
 data/imagenet10_train
 data/imagenet10_val
 *.tfrecords
+template
