@@ -27,11 +27,11 @@ python create_tfrecords.py \
 
 def make_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--metadata_file', type=str,default='tiny_imagenet_train_list.txt')
-    parser.add_argument('-o', '--output', type=str,default='tiny_imagenet_train')
-    parser.add_argument('-l', '--labels', type=str,default='integer_encoding.json')
+    parser.add_argument('-m', '--metadata_file', type=str,default='/mnt/WD-4TB/zhuwei/imagenet10/val.txt')
+    parser.add_argument('-o', '--output', type=str,default='data/imagenet10_val')
+    parser.add_argument('-l', '--labels', type=str,default='data/integer_encoding.json')
     parser.add_argument('-b', '--boxes', type=str, default='')
-    parser.add_argument('-s', '--num_shards', type=int, default=2)
+    parser.add_argument('-s', '--num_shards', type=int, default=10)
     return parser.parse_args()
 
 
@@ -153,13 +153,15 @@ def main():
     num_examples_written = 0
     num_skipped_images = 0
     cnt = -1
-    integ=open('integer_encoding.txt')
+    '''
+    integ=open('data/integer_encoding.txt')
     lines=integ.readlines()
     keyic={}
     for line in lines:
         line_s=line.strip('\n').split(' ')
         keyic.update({line_s[0]:int(line_s[1])})
     keyic={'norm':0,'defect':1}
+    '''
     for T in tqdm(metadata.itertuples()):
         cnt += 1
         if num_examples_written == 0:
@@ -174,8 +176,8 @@ def main():
             image_path=Ts[0]+' '+Ts[1]
             integer_label=keyic[Ts[2]]
         else:
-            image_path = T[1].split(' ')[0]# T.path  # absolute path to an image
-            integer_label = int(T[1].split(' ')[1]) #label_encoder[T.wordnet_id]
+            image_path = Ts[0]# T.path  # absolute path to an image
+            integer_label = int(Ts[1]) #label_encoder[T.wordnet_id]
         boxes = None  # validation images don't have boxes
         if bounding_boxes is not None:
             boxes = bounding_boxes.get(T.just_name, np.empty((0, 4), dtype='float32'))

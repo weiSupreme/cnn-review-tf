@@ -19,13 +19,13 @@ def LeNet5(x, is_training, num_classes=200, depth_multiplier='0.5'):
         x = tfslim.max_pool2d(x, kernel_size=2, scope='max_pool2')
 
         #flatten
-        x=tfslim.flatten(x,scope='flatten')
+        x = tfslim.flatten(x, scope='flatten')
 
         #classifier
         x = tfslim.fully_connected(x, num_outputs=120, scope='fc1')
         #x=tfslim.dropout(x,is_training=is_training)
-        logits = tfslim.fully_connected(x,
-                                        num_classes,
-                                        activation_fn=None,
-                                        scope='classifier')
+        x = tfslim.fully_connected(x,
+                                   num_classes,
+                                   activation_fn=None,
+                                   scope='classifier')
     return x

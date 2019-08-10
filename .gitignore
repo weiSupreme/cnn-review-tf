@@ -4,3 +4,6 @@ data/tiny_imagenet_val
 models
 __pycache__
 MNIST_data
+data/imagenet10_train
+data/imagenet10_val
+*.tfrecords

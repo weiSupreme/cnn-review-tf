@@ -17,20 +17,20 @@ Parameters below is for training 0.5x version.
 # so 1 epoch ~ 10000 steps
 
 GPU_TO_USE = '3'
-BATCH_SIZE = 64
-VALIDATION_BATCH_SIZE = 32
-NUM_EPOCHS = 50  # set 166 for 1.0x version
-TRAIN_DATASET_SIZE = 100000
+BATCH_SIZE = 24
+VALIDATION_BATCH_SIZE = 8
+NUM_EPOCHS = 100  # set 166 for 1.0x version
+TRAIN_DATASET_SIZE = 5000
 NUM_STEPS = NUM_EPOCHS * (TRAIN_DATASET_SIZE // BATCH_SIZE)
 PARAMS = {
-    'train_dataset_path': 'data/tiny_imagenet_train/',
-    'val_dataset_path': 'data/tiny_imagenet_val/',
-    'weight_decay': 0.001, # 4e-5,
-    'initial_learning_rate': 0.0625,  #0.0625,  # 0.5/8
+    'train_dataset_path': 'data/imagenet10_train/',
+    'val_dataset_path': 'data/imagenet10_val/',
+    'weight_decay': 5e-5, # 4e-5,
+    'initial_learning_rate': 0.01,  #0.0625,  # 0.5/8
     'decay_steps': NUM_STEPS,
     'end_learning_rate': 1e-7,
-    'model_dir': 'models/tiny_imagenet_0.5',
-    'num_classes': 200,
+    'model_dir': 'models/imagenet10_ResNet50',
+    'num_classes': 10,
     'depth_multiplier': '0.5'  # set '1.0' for 1.0x version
 }
 
@@ -72,7 +72,7 @@ val_input_fn=get_input_fn(is_training=False)
 estiamtor=tf.estimator.Estimator(model_fn=model_fn,params=PARAMS,config=run_config)
 
 train_spec=tf.estimator.TrainSpec(train_input_fn,max_steps=NUM_STEPS)
-eval_spec=tf.estimator.EvalSpec(val_input_fn,steps=None,throttle_secs=90,
+eval_spec=tf.estimator.EvalSpec(val_input_fn,steps=None,throttle_secs=300,
     hooks=[RestoreMovingAverageHook(PARAMS['model_dir'])])
 
 tf.estimator.train_and_evaluate(estiamtor,train_spec,eval_spec)

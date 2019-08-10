@@ -1,10 +1,10 @@
 import tensorflow as tf
-from architectures.LeNet5 import LeNet5 as cnn
+from architectures.ResNet import ResNet as cnn
 
 MOMENTUM = 0.9
 USE_NESTEROV = True
 MOVING_AVERAGE_DECAY = 0.995
-RESIZE_SIZE = 28
+RESIZE_SIZE = 224
 
 
 def model_fn(features, labels, mode, params):
@@ -18,7 +18,7 @@ def model_fn(features, labels, mode, params):
             x = tf.reshape(x, shape=[1, RESIZE_SIZE, RESIZE_SIZE, -1])
     else:
         with tf.name_scope('image_preprocess'):
-            x = tf.reshape(x, shape=[-1, RESIZE_SIZE, RESIZE_SIZE, 1])
+            x = tf.reshape(x, shape=[-1, RESIZE_SIZE, RESIZE_SIZE, 3])
     with tf.name_scope('standardize_input'):
        x = (2.0 * x) - 1.0
 
@@ -28,13 +28,19 @@ def model_fn(features, labels, mode, params):
                  num_classes=params['num_classes'],
                  depth_multiplier=params['depth_multiplier'])
     predicted_class = tf.argmax(logits, 1, output_type=tf.int32)
-
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        predictions = {
+    predictions = {
             'class_ids': predicted_class[:, tf.newaxis],
             'probabilities': tf.nn.softmax(logits, axis=1),
             'logits': logits
         }
+
+    with tf.name_scope('evaluation_ops'):
+        accuracy = tf.metrics.accuracy(labels['labels'],predicted_class)
+        top5_accuracy = tf.metrics.mean(tf.to_float(tf.nn.in_top_k(
+            predictions=predictions['probabilities'], targets=labels['labels'], k=5
+        )))
+
+    if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
     with tf.name_scope('weight_decay'):
@@ -49,14 +55,8 @@ def model_fn(features, labels, mode, params):
         tf.losses.add_loss(loss)
     total_loss=tf.losses.get_total_loss(add_regularization_losses=True)
 
-    #compute accuracy
-    acc = tf.metrics.accuracy(labels=labels['labels'],
-                              predictions=predicted_class,
-                              name='accuracy')
-    metrics = {'accuracy': acc}
-    tf.summary.scalar('accuracy', acc[1])
-
     if mode == tf.estimator.ModeKeys.EVAL:
+        metrics={'val_accuracy':accuracy,'val_top5_accuracy':top5_accuracy}
         return tf.estimator.EstimatorSpec(mode,
                                           loss=total_loss,
                                           eval_metric_ops=metrics)
@@ -70,6 +70,7 @@ def model_fn(features, labels, mode, params):
             decay_steps=params['decay_steps'],
             end_learning_rate=params['end_learning_rate'],
             name='learning_rate')
+    tf.summary.scalar('learning_rate',learning_rate)
 
     with tf.variable_scope('optimizer'):
         optimizer = tf.train.MomentumOptimizer(learning_rate,
@@ -78,6 +79,9 @@ def model_fn(features, labels, mode, params):
         grads_and_vars = optimizer.compute_gradients(total_loss)
         train_op = optimizer.apply_gradients(grads_and_vars, global_step)
 
+    tf.summary.scalar('train_accuracy', accuracy[1])
+    tf.summary.scalar('train_top5_accuracy', top5_accuracy[1])
+    
     with tf.control_dependencies([train_op]), tf.name_scope('ema'):
         ema = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGE_DECAY,
                                                 num_updates=global_step)
