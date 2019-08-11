@@ -12,6 +12,7 @@ REPEAT = [1, 4, 8, 4, 1]
 BATCH_NORM_MOMENTUM = 0.997
 BATCH_NORM_EPSILON = 1e-3
 
+
 def ShuffleNetV2(x, is_training, num_classes=200, depth_multiplier='0.5'):
     out_channels = CHNNELS[depth_multiplier]
 
@@ -28,26 +29,33 @@ def ShuffleNetV2(x, is_training, num_classes=200, depth_multiplier='0.5'):
         return x
 
     with tf.variable_scope('ShuffleNetV2'):
-        params={'normalizer_fn':batch_norm}
+        params = {'normalizer_fn': batch_norm}
 
-        with tfslim.arg_scope([tfslim.conv2d,tfslim.separable_conv2d],**params):
+        with tfslim.arg_scope([tfslim.conv2d, tfslim.separable_conv2d],
+                              **params):
             x = tfslim.conv2d(x,
-                          out_channels[0],
-                          kernel_size=3,
-                          stride=2,
-                          scope='conv1')
-            x = tfslim.max_pool2d(x, kernel_size=3,stride=2,scope='max_pool1')
+                              out_channels[0],
+                              kernel_size=3,
+                              stride=2,
+                              scope='conv1')
+            x = tfslim.max_pool2d(x,
+                                  kernel_size=3,
+                                  stride=2,
+                                  scope='max_pool1')
             for st in [2, 3, 4]:
-                with tf.variable_scope('stage'+str(st)):
-                    x,y=downsample(x,out_channels[st-1])
-                    for u in range(2,REPEAT[st-1]+1):
-                        with tf.variable_scope('unit'+str(u)):
-                            x,y=concat_shuffle_split(x,y)
-                            y=basic_unit(y)
-                    x=tf.concat([x,y],axis=3)
-            x=tfslim.conv2d(x,out_channels[4],kernel_size=1,scope='conv5')
-        x=tf.reduce_mean(x,axis=[1,2])
-        x=tfslim.fully_connected(x,num_classes,activation_fn=None,scope='classifier')
+                with tf.variable_scope('stage' + str(st)):
+                    x, y = downsample(x, out_channels[st - 1])
+                    for u in range(2, REPEAT[st - 1] + 1):
+                        with tf.variable_scope('unit' + str(u)):
+                            x, y = concat_shuffle_split(x, y)
+                            y = basic_unit(y)
+                    x = tf.concat([x, y], axis=3)
+            x = tfslim.conv2d(x, out_channels[4], kernel_size=1, scope='conv5')
+        x = tf.reduce_mean(x, axis=[1, 2])
+        x = tfslim.fully_connected(x,
+                                   num_classes,
+                                   activation_fn=None,
+                                   scope='classifier')
     return x
 
 
