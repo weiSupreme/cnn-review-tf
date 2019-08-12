@@ -24,14 +24,12 @@ CONFIGURATIONS = {'0.5': mobilenetv3_samll, '1.0': mobilenetv3_large}
 BATCH_NORM_MOMENTUM = 0.997
 BATCH_NORM_EPSILON = 1e-36
 
-expand_multiplier = 1
+expand_multiplier = 3  # scaled to 1/3
 
 
 def MobileNetV3(x, is_training, num_classes=200, depth_multiplier='0.5'):
     configs = CONFIGURATIONS[depth_multiplier]
     num_bnecks = len(configs['kernel'])
-    for i in range(1, num_bnecks):
-        configs['expand'][i] = configs['expand'][i] // expand_multiplier
 
     def batch_norm(x):
         x = tf.layers.batch_normalization(x,
@@ -59,14 +57,16 @@ def MobileNetV3(x, is_training, num_classes=200, depth_multiplier='0.5'):
                     if configs['stride'][unit] == 1:
                         x = basic_block(x,
                                         num_outputs=configs['output'][unit],
-                                        expand=configs['expand'][unit],
+                                        expand=configs['expand'][unit] //
+                                        expand_multiplier,
                                         kernel_size=configs['kernel'][unit],
                                         is_SE=configs['SE'][unit],
                                         is_Hswish=configs['activation'][unit])
                     else:
                         x = downsample(x,
                                        num_outputs=configs['output'][unit],
-                                       expand=configs['expand'][unit],
+                                       expand=configs['expand'][unit] //
+                                       expand_multiplier,
                                        kernel_size=configs['kernel'][unit],
                                        is_SE=configs['SE'][unit],
                                        is_Hswish=configs['activation'][unit])

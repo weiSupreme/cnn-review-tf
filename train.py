@@ -16,7 +16,7 @@ Parameters below is for training 0.5x version.
 # 1281144/128 = 10008.9375
 # so 1 epoch ~ 10000 steps
 
-GPU_TO_USE = '2'
+GPU_TO_USE = '3'
 BATCH_SIZE = 32
 VALIDATION_BATCH_SIZE = 32
 NUM_EPOCHS = 100  # set 166 for 1.0x version
@@ -29,7 +29,7 @@ PARAMS = {
     'initial_learning_rate': 0.0625,  #0.0625,  # 0.5/8
     'decay_steps': NUM_STEPS,
     'end_learning_rate': 1e-7,
-    'model_dir': 'models/imagenet10_mobilenetv3_small_SE',
+    'model_dir': 'models/imagenet10_mobilenetv3_small_0.33',
     'pretrained_dir':'',
     'num_classes': 10,
     'depth_multiplier': '0.5'  # set '1.0' for 1.0x version
