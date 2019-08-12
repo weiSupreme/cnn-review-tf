@@ -10,6 +10,6 @@
 
 5. MobileNetV3            
 
-6. DarkNet53            
+
 
 

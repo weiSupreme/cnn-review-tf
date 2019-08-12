@@ -54,19 +54,21 @@ def MobileNetV3(x, is_training, num_classes=200, depth_multiplier='0.5'):
                               scope='conv1')
             for unit in range(num_bnecks):
                 with tf.variable_scope('bneck' + str(unit + 1)):
+                    ratio = expand_multiplier
+                    if unit == 0:
+                        ratio = 1
                     if configs['stride'][unit] == 1:
                         x = basic_block(x,
                                         num_outputs=configs['output'][unit],
                                         expand=configs['expand'][unit] //
-                                        expand_multiplier,
+                                        ratio,
                                         kernel_size=configs['kernel'][unit],
                                         is_SE=configs['SE'][unit],
                                         is_Hswish=configs['activation'][unit])
                     else:
                         x = downsample(x,
                                        num_outputs=configs['output'][unit],
-                                       expand=configs['expand'][unit] //
-                                       expand_multiplier,
+                                       expand=configs['expand'][unit] // ratio,
                                        kernel_size=configs['kernel'][unit],
                                        is_SE=configs['SE'][unit],
                                        is_Hswish=configs['activation'][unit])
