@@ -78,7 +78,8 @@ def model_fn(features, labels, mode, params):
         #compute loss
         loss = tf.losses.sparse_softmax_cross_entropy(labels=labels['labels'],
                                                       logits=logits)
-        #loss = tf.reduce_mean(loss, axis=0)
+         
+        #loss=focal_loss_with_softmax(logits =logits,labels = labels['labels'])
         tf.losses.add_loss(loss)
     total_loss = tf.losses.get_total_loss(add_regularization_losses=True)
 
@@ -134,6 +135,12 @@ def add_weight_decay(weight_decay):
         value = tf.multiply(weight_decay, tf.nn.l2_loss(w))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, value)
 
+def focal_loss_with_softmax(logits,labels,alpha=0.25,gamma=2):
+    y_pred=tf.nn.softmax(logits=logits)
+    labels=tf.one_hot(labels,depth =y_pred.shape[1])
+    loss=-labels*alpha*(1-y_pred)**gamma*tf.log(y_pred)
+    loss=tf.reduce_sum(loss)
+    return loss
 
 class RestoreMovingAverageHook(tf.train.SessionRunHook):
     def __init__(self, model_dir):

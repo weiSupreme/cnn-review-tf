@@ -17,9 +17,9 @@ Parameters below is for training 0.5x version.
 # so 1 epoch ~ 10000 steps
 
 GPU_TO_USE = '3'
-BATCH_SIZE = 8
-VALIDATION_BATCH_SIZE = 8
-NUM_EPOCHS = 100  # set 166 for 1.0x version
+BATCH_SIZE = 32
+VALIDATION_BATCH_SIZE = 32
+NUM_EPOCHS = 101  # set 166 for 1.0x version
 TRAIN_DATASET_SIZE = 5000
 NUM_STEPS = NUM_EPOCHS * (TRAIN_DATASET_SIZE // BATCH_SIZE)
 PARAMS = {
@@ -29,7 +29,7 @@ PARAMS = {
     'initial_learning_rate': 0.0625,  #0.0625,  # 0.5/8
     'decay_steps': NUM_STEPS,
     'end_learning_rate': 1e-7,
-    'model_dir': 'models/imagenet10_darknet53',
+    'model_dir': 'models/imagenet10_mobilenetv3_focal_loss',
     'pretrained_dir':'',
     'num_classes': 10,
     'depth_multiplier': '0.5'  # set '1.0' for 1.0x version
